@@ -53,7 +53,7 @@ def generate_presigned_url(bucket_name, object_key, expiration=3600):
 
 def fetch_summary(summary_uri):
     """
-    Fetches the summary.json file using a pre-signed URL since ACLs are disabled.
+    Fetches the summary.json file using a pre-signed URL and formats it into plain text.
     """
     try:
         # Extract the S3 object key from the URI
@@ -64,10 +64,23 @@ def fetch_summary(summary_uri):
 
         # Fetch the summary.json file from the pre-signed URL
         response = requests.get(pre_signed_url)
-        if response.status_code == 200:
-            return response.json()
-        else:
+        if response.status_code != 200:
             raise Exception(f"Failed to fetch summary.json: {response.status_code}, {response.text}")
+
+        summary_json = response.json()
+
+        # Parse the JSON to extract summarized text
+        summary_text = ""
+        sections = summary_json.get("ClinicalDocumentation", {}).get("Sections", [])
+        for section in sections:
+            section_name = section.get("SectionName", "Unknown Section")
+            summary_text += f"\n{section_name}:\n"
+            for summary in section.get("Summary", []):
+                summarized_segment = summary.get("SummarizedSegment", "")
+                summary_text += f"- {summarized_segment}\n"
+
+        return summary_text.strip()
+
     except Exception as e:
         raise Exception(f"Error fetching summary: {str(e)}")
 
@@ -140,23 +153,24 @@ def get_audio_files():
 def start_transcription_route():
     """
     API endpoint to start transcription for a selected audio file.
+    Returns the summarized text as plain text.
     """
     global transcription_summary
     data = request.json
     audio_url = data.get('audioUrl')
     if not audio_url:
-        return jsonify({"error": "Audio URL is required."}), 400
+        return "Audio URL is required.", 400
 
     job_name = f"medical_transcription_job_{int(time.time())}"
     try:
         medical_scribe_output = start_transcription(job_name, audio_url)
         summary_uri = medical_scribe_output['ClinicalDocumentUri']
 
-        # Fetch summary using a pre-signed URL
+        # Fetch and format summary into plain text
         transcription_summary = fetch_summary(summary_uri)
-        return jsonify(transcription_summary)
+        return transcription_summary, 200  # Return plain text directly
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return f"Error: {str(e)}", 500
 
 
 @app.route('/question-ans', methods=['POST'])

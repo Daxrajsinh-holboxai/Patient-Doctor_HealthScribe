@@ -9,18 +9,9 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   const audioFiles = [
-    {
-      label: "Audio File 1",
-      url: "s3://dax-health-transcribe/Sample_data.mp3",
-    },
-    {
-      label: "Audio File 2",
-      url: "s3://dax-health-transcribe/Sample_data.mp3",
-    },
-    {
-      label: "Audio File 3",
-      url: "s3://dax-health-transcribe/Sample_data.mp3",
-    },
+    { label: "Audio File 1", url: "s3://dax-health-transcribe/Sample_data.mp3" },
+    { label: "Audio File 2", url: "s3://dax-health-transcribe/Sample_data.mp3" },
+    { label: "Audio File 3", url: "s3://dax-health-transcribe/Sample_data.mp3" },
   ];
 
   const handleTranscription = async () => {
@@ -34,7 +25,11 @@ function App() {
       const response = await axios.post("http://localhost:5000/start-transcription", {
         audioUrl: selectedAudio,
       });
-      setSummary(response.data);
+
+      // Convert JSON response to plain text format
+      const formattedSummary = response.data.summary.replace(/\\n/g, "\n");
+
+      setSummary(formattedSummary);
     } catch (error) {
       console.error("Error starting transcription:", error);
       alert("Failed to process the audio file.");
@@ -91,11 +86,13 @@ function App() {
       </button>
 
       {summary && (
-        <div className="mt-4">
-          <h2 className="font-bold">Summary:</h2>
-          <pre className="bg-gray-100 p-2 rounded">{JSON.stringify(summary, null, 2)}</pre>
-        </div>
-      )}
+  <div className="mt-4">
+    <h2 className="font-bold text-white">Summary:</h2>
+    <pre className="bg-transparent text-white p-2 rounded whitespace-pre-wrap">{summary}</pre>
+  </div>
+)}
+
+
 
       <div className="mt-4">
         <h2 className="font-bold">Ask a Question:</h2>
