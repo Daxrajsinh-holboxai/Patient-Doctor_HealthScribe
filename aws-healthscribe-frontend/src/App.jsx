@@ -11,15 +11,15 @@ function App() {
   const audioFiles = [
     {
       label: "Audio File 1",
-      url: "https://your-bucket-name.s3.us-east-1.amazonaws.com/audio1.mp3",
+      url: "s3://dax-health-transcribe/Sample_data.mp3",
     },
     {
       label: "Audio File 2",
-      url: "https://your-bucket-name.s3.us-east-1.amazonaws.com/audio2.mp3",
+      url: "s3://dax-health-transcribe/Sample_data.mp3",
     },
     {
       label: "Audio File 3",
-      url: "https://your-bucket-name.s3.us-east-1.amazonaws.com/audio3.mp3",
+      url: "s3://dax-health-transcribe/Sample_data.mp3",
     },
   ];
 
