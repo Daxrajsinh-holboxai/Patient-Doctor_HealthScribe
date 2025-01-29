@@ -19,17 +19,20 @@ function App() {
       alert("Please select an audio file.");
       return;
     }
-
+  
     setLoading(true);
     try {
       const response = await axios.post("http://localhost:5000/start-transcription", {
         audioUrl: selectedAudio,
       });
-
-      // Convert JSON response to plain text format
-      const formattedSummary = response.data.summary.replace(/\\n/g, "\n");
-
-      setSummary(formattedSummary);
+  
+      console.log("API Response:", response.data); // Debugging
+  
+      if (response.data && typeof response.data === "string") {
+        setSummary(response.data.replace(/\\n/g, "\n"));
+      } else {
+        alert("Unexpected API response. Check console.");
+      }
     } catch (error) {
       console.error("Error starting transcription:", error);
       alert("Failed to process the audio file.");
@@ -37,6 +40,8 @@ function App() {
       setLoading(false);
     }
   };
+  
+  
 
   const handleQuestionAnswer = async () => {
     if (!summary || !question) {
@@ -115,7 +120,7 @@ function App() {
       {answer && (
         <div className="mt-4">
           <h2 className="font-bold">Answer:</h2>
-          <p className="bg-gray-100 p-2 rounded">{answer}</p>
+          <p className="bg-transparent p-2 rounded">{answer}</p>
         </div>
       )}
 

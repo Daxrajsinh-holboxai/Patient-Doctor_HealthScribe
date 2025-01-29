@@ -140,6 +140,33 @@ def poll_transcription_job(job_name):
         except Exception as e:
             raise Exception(f"Error checking job status: {e}")
 
+def ask_claude(question, summary):
+   """
+   Queries Claude using the Conversation API.
+   """
+   conversation = [
+       {
+           "role": "user",
+           "content": [{"text": f"Here is the summary of the medical transcription:\n{json.dumps(summary, indent=2)}\n\nNow, based on this summary, please answer the following question:\n{question}"}]
+       }
+   ]
+
+   try:
+       response = brt.converse(
+           modelId="anthropic.claude-3-5-sonnet-20240620-v1:0",  # ✅ Use the model you have access to
+           messages=conversation,
+           inferenceConfig={
+               "maxTokens": 512,
+               "temperature": 0.5,
+               "topP": 0.9
+           }
+       )
+       response_text = response["output"]["message"]["content"][0]["text"]
+       return response_text
+   except Exception as e:
+       raise Exception(f"Error querying Claude: {e}")
+
+
 
 @app.route('/audio-files', methods=['GET'])
 def get_audio_files():
